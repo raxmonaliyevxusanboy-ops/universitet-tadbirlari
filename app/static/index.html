@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Universitet Tadbirlari Taqvimi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-6">
+    <h1 class="text-3xl font-bold text-blue-600 text-center mb-8">Universitet Tadbirlari Taqvimi</h1>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-7xl mx-auto">
+        <div class="bg-white p-6 rounded-lg shadow">
+            <h2 id="venueFormTitle" class="text-xl font-semibold mb-4 text-blue-600">1. Yangi Xona Qo'shish</h2>
+            <form id="venueForm" class="space-y-3">
+                <input type="hidden" id="venue_id">
+                <div>
+                    <label class="block text-sm font-medium">Xona raqami/nomi:</label>
+                    <input type="text" id="room_number" required class="w-full border p-2 rounded">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium">Sig'imi:</label>
+                    <input type="number" id="capacity" required class="w-full border p-2 rounded">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium">Jihozlar:</label>
+                    <input type="text" id="equipment" class="w-full border p-2 rounded" placeholder="Proektor, doska...">
+                </div>
+                <div class="flex gap-2">
+                    <button type="submit" id="venueSubmitBtn" class="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600">Saqlash</button>
+                    <button type="button" id="venueCancelBtn" onclick="resetVenueForm()" class="hidden w-1/3 bg-gray-400 text-white py-2 rounded hover:bg-gray-500">Bekor</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow">
+            <h2 id="userFormTitle" class="text-xl font-semibold mb-4 text-purple-600">2. Yangi Tashkilotchi Qo'shish</h2>
+            <form id="userForm" class="space-y-3">
+                <input type="hidden" id="user_id">
+                <div>
+                    <label class="block text-sm font-medium">F.I.SH:</label>
+                    <input type="text" id="full_name" required class="w-full border p-2 rounded">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium">Email:</label>
+                    <input type="email" id="email" required class="w-full border p-2 rounded">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium">Roli:</label>
+                    <select id="role" class="w-full border p-2 rounded">
+                        <option value="student">Talaba</option>
+                        <option value="teacher">O'qituvchi</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                <div class="flex gap-2">
+                    <button type="submit" id="userSubmitBtn" class="w-full bg-purple-500 text-white py-2 rounded hover:bg-purple-600">Saqlash</button>
+                    <button type="button" id="userCancelBtn" onclick="resetUserForm()" class="hidden w-1/3 bg-gray-400 text-white py-2 rounded hover:bg-gray-500">Bekor</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow">
+            <h2 id="eventFormTitle" class="text-xl font-semibold mb-4 text-green-600">3. Tadbir Rejalashtirish</h2>
+            <form id="eventForm" class="space-y-3">
+                <input type="hidden" id="event_id">
+                <div>
+                    <label class="block text-sm font-medium">Tadbir nomi:</label>
+                    <input type="text" id="title" required class="w-full border p-2 rounded">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium">Xonani tanlang:</label>
+                    <select id="event_venue" required class="w-full border p-2 rounded"></select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium">Tashkilotchini tanlang:</label>
+                    <select id="event_organizer" required class="w-full border p-2 rounded"></select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium">Boshlanish vaqti:</label>
+                    <input type="datetime-local" id="start_time" required class="w-full border p-2 rounded">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium">Tugash vaqti:</label>
+                    <input type="datetime-local" id="end_time" required class="w-full border p-2 rounded">
+                </div>
+                <div class="flex gap-2">
+                    <button type="submit" id="eventSubmitBtn" class="w-full bg-green-500 text-white py-2 rounded hover:bg-green-600">Rejalashtirish</button>
+                    <button type="button" id="eventCancelBtn" onclick="resetEventForm()" class="hidden w-1/3 bg-gray-400 text-white py-2 rounded hover:bg-gray-500">Bekor</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-7xl mx-auto mt-8">
+        <div class="bg-white p-6 rounded-lg shadow">
+            <h3 class="font-bold text-lg mb-3">Mavjud Xonalar:</h3>
+            <ul id="venuesList" class="space-y-3"></ul>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow">
+            <h3 class="font-bold text-lg mb-3">Tashkilotchilar:</h3>
+            <ul id="usersList" class="space-y-3"></ul>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow">
+            <h3 class="font-bold text-lg mb-3">Tadbirlar:</h3>
+            <ul id="eventsList" class="space-y-3"></ul>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://127.0.0.1:8000';
+
+        // ================= 1. XONA CRUD =================
+        document.getElementById('venueForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('venue_id').value;
+            const data = {
+                room_number: document.getElementById('room_number').value,
+                capacity: parseInt(document.getElementById('capacity').value),
+                equipment: document.getElementById('equipment').value || null
+            };
+
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `${API_URL}/venues/${id}` : `${API_URL}/venues/`;
+
+            const res = await fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (res.ok) {
+                resetVenueForm();
+                loadVenues();
+                loadEvents();
+            } else {
+                const err = await res.json();
+                alert(err.detail || "Xato yuz berdi");
+            }
+        });
+
+        function editVenue(id, room_number, capacity, equipment) {
+            document.getElementById('venue_id').value = id;
+            document.getElementById('room_number').value = room_number;
+            document.getElementById('capacity').value = capacity;
+            document.getElementById('equipment').value = (equipment === 'null' || !equipment) ? '' : equipment;
+
+            document.getElementById('venueFormTitle').innerText = "Xonani Tahrirlash";
+            document.getElementById('venueSubmitBtn').innerText = "Yangilash";
+            document.getElementById('venueCancelBtn').classList.remove('hidden');
+        }
+
+        function resetVenueForm() {
+            document.getElementById('venueForm').reset();
+            document.getElementById('venue_id').value = '';
+            document.getElementById('venueFormTitle').innerText = "1. Yangi Xona Qo'shish";
+            document.getElementById('venueSubmitBtn').innerText = "Saqlash";
+            document.getElementById('venueCancelBtn').classList.add('hidden');
+        }
+
+        async function deleteVenue(id) {
+            if (confirm("Ushbu xonani o'chirmoqchimisiz?")) {
+                const res = await fetch(`${API_URL}/venues/${id}`, { method: 'DELETE' });
+                if (res.ok) {
+                    loadVenues();
+                    loadEvents();
+                } else {
+                    const err = await res.json();
+                    alert(err.detail || "Xato yuz berdi");
+                }
+            }
+        }
+
+        // ================= 2. FOYDALANUVCHI CRUD =================
+        document.getElementById('userForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('user_id').value;
+            const data = {
+                full_name: document.getElementById('full_name').value,
+                email: document.getElementById('email').value,
+                role: document.getElementById('role').value
+            };
+
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `${API_URL}/users/${id}` : `${API_URL}/users/`;
+
+            const res = await fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (res.ok) {
+                resetUserForm();
+                loadUsers();
+                loadEvents();
+            } else {
+                const err = await res.json();
+                alert(err.detail || "Xato yuz berdi");
+            }
+        });
+
+        function editUser(id, full_name, email, role) {
+            document.getElementById('user_id').value = id;
+            document.getElementById('full_name').value = full_name;
+            document.getElementById('email').value = email;
+            document.getElementById('role').value = role;
+
+            document.getElementById('userFormTitle').innerText = "Tashkilotchini Tahrirlash";
+            document.getElementById('userSubmitBtn').innerText = "Yangilash";
+            document.getElementById('userCancelBtn').classList.remove('hidden');
+        }
+
+        function resetUserForm() {
+            document.getElementById('userForm').reset();
+            document.getElementById('user_id').value = '';
+            document.getElementById('userFormTitle').innerText = "2. Yangi Tashkilotchi Qo'shish";
+            document.getElementById('userSubmitBtn').innerText = "Saqlash";
+            document.getElementById('userCancelBtn').classList.add('hidden');
+        }
+
+        async function deleteUser(id) {
+            if (confirm("Ushbu tashkilotchini o'chirmoqchimisiz?")) {
+                const res = await fetch(`${API_URL}/users/${id}`, { method: 'DELETE' });
+                if (res.ok) {
+                    loadUsers();
+                    loadEvents();
+                } else {
+                    const err = await res.json();
+                    alert(err.detail || "Xato yuz berdi");
+                }
+            }
+        }
+
+        // ================= 3. TADBIR CRUD =================
+        document.getElementById('eventForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('event_id').value;
+            const data = {
+                title: document.getElementById('title').value,
+                venue_id: parseInt(document.getElementById('event_venue').value),
+                organizer_id: parseInt(document.getElementById('event_organizer').value),
+                start_time: document.getElementById('start_time').value,
+                end_time: document.getElementById('end_time').value
+            };
+
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `${API_URL}/events/${id}` : `${API_URL}/events/`;
+
+            const res = await fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (res.ok) {
+                resetEventForm();
+                loadEvents();
+            } else {
+                const err = await res.json();
+                alert(err.detail || "Xato yuz berdi");
+            }
+        });
+
+        function editEvent(id, title, venue_id, organizer_id, start_time, end_time) {
+            document.getElementById('event_id').value = id;
+            document.getElementById('title').value = title;
+            document.getElementById('event_venue').value = venue_id;
+            document.getElementById('event_organizer').value = organizer_id;
+
+            // Vaqtni inputga mos formatga keltirish
+            document.getElementById('start_time').value = start_time.substring(0, 16);
+            document.getElementById('end_time').value = end_time.substring(0, 16);
+
+            document.getElementById('eventFormTitle').innerText = "Tadbirni Tahrirlash";
+            document.getElementById('eventSubmitBtn').innerText = "Yangilash";
+            document.getElementById('eventCancelBtn').classList.remove('hidden');
+        }
+
+        function resetEventForm() {
+            document.getElementById('eventForm').reset();
+            document.getElementById('event_id').value = '';
+            document.getElementById('eventFormTitle').innerText = "3. Tadbir Rejalashtirish";
+            document.getElementById('eventSubmitBtn').innerText = "Rejalashtirish";
+            document.getElementById('eventCancelBtn').classList.add('hidden');
+        }
+
+        async function deleteEvent(id) {
+            if (confirm("Ushbu tadbirni o'chirmoqchimisiz?")) {
+                const res = await fetch(`${API_URL}/events/${id}`, { method: 'DELETE' });
+                if (res.ok) loadEvents();
+            }
+        }
+
+        // ================= MA'LUMOTLARNI YUKLASH =================
+        async function loadVenues() {
+            const res = await fetch(`${API_URL}/venues/`);
+            const venues = await res.json();
+            const list = document.getElementById('venuesList');
+            const select = document.getElementById('event_venue');
+            list.innerHTML = '';
+            select.innerHTML = '<option value="">Xonani tanlang...</option>';
+            venues.forEach(v => {
+                list.innerHTML += `
+                    <li class="border-b pb-2 flex justify-between items-center">
+                        <div>
+                            <p class="font-medium text-gray-800">${v.room_number} (Sig'imi: ${v.capacity})</p>
+                        </div>
+                        <div class="flex gap-2 text-sm">
+                            <button onclick="editVenue(${v.id}, '${v.room_number}', ${v.capacity}, '${v.equipment}')" class="text-blue-500 hover:underline">Tahrirlash</button>
+                            <button onclick="deleteVenue(${v.id})" class="text-red-500 hover:underline">O'chirish</button>
+                        </div>
+                    </li>`;
+                select.innerHTML += `<option value="${v.id}">${v.room_number}</option>`;
+            });
+        }
+
+        async function loadUsers() {
+            const res = await fetch(`${API_URL}/users/`);
+            const users = await res.json();
+            const list = document.getElementById('usersList');
+            const select = document.getElementById('event_organizer');
+            list.innerHTML = '';
+            select.innerHTML = '<option value="">Tashkilotchini tanlang...</option>';
+            users.forEach(u => {
+                list.innerHTML += `
+                    <li class="border-b pb-2 flex justify-between items-center">
+                        <div>
+                            <p class="font-medium text-gray-800">${u.full_name} (${u.role})</p>
+                        </div>
+                        <div class="flex gap-2 text-sm">
+                            <button onclick="editUser(${u.id}, '${u.full_name}', '${u.email}', '${u.role}')" class="text-blue-500 hover:underline">Tahrirlash</button>
+                            <button onclick="deleteUser(${u.id})" class="text-red-500 hover:underline">O'chirish</button>
+                        </div>
+                    </li>`;
+                select.innerHTML += `<option value="${u.id}">${u.full_name}</option>`;
+            });
+        }
+
+        async function loadEvents() {
+            const res = await fetch(`${API_URL}/events/`);
+            const events = await res.json();
+            const list = document.getElementById('eventsList');
+            list.innerHTML = '';
+            events.forEach(e => {
+                list.innerHTML += `
+                    <li class="border-b pb-2 flex justify-between items-center">
+                        <div>
+                            <p class="font-semibold text-gray-800">${e.title}</p>
+                            <p class="text-xs text-gray-600">${new Date(e.start_time).toLocaleString('uz-UZ')}</p>
+                        </div>
+                        <div class="flex gap-2 text-sm">
+                            <button onclick="editEvent(${e.id}, '${e.title}', ${e.venue_id}, ${e.organizer_id}, '${e.start_time}', '${e.end_time}')" class="text-blue-500 hover:underline">Tahrirlash</button>
+                            <button onclick="deleteEvent(${e.id})" class="text-red-500 hover:underline">O'chirish</button>
+                        </div>
+                    </li>`;
+            });
+        }
+
+        // Boshlang'ich yuklash
+        loadVenues();
+        loadUsers();
+        loadEvents();
+    </script>
+</body>
+</html>
